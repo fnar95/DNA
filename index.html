@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مختبر بناء واستنساخ شريط DNA التفاعلي</title>
+    <!-- Tailwind CSS for UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 85% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 25%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphic elements */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Base Color themes */
+        .base-A { background-color: #ef4444; border-color: #f87171; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .base-T { background-color: #3b82f6; border-color: #60a5fa; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .base-C { background-color: #10b981; border-color: #34d399; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .base-G { background-color: #f59e0b; border-color: #fbbf24; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
+        .btn-A { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.4)); border-color: #ef4444; }
+        .btn-A:hover { background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.6)); }
+        
+        .btn-T { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4)); border-color: #3b82f6; }
+        .btn-T:hover { background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.6)); }
+
+        .btn-C { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.4)); border-color: #10b981; }
+        .btn-C:hover { background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(5, 150, 105, 0.6)); }
+
+        .btn-G { background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.4)); border-color: #f59e0b; }
+        .btn-G:hover { background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(217, 119, 6, 0.6)); }
+
+        /* Slot active selection */
+        .slot-active {
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+            border-color: #eab308 !important;
+            transform: scale(1.05);
+        }
+
+        /* Connection animations */
+        @keyframes bondPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.9; }
+        }
+
+        .bond-line {
+            animation: bondPulse 2s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-6 select-none">
+
+    <div class="max-w-6xl mx-auto w-full flex-grow flex flex-col gap-4">
+        
+        <!-- Navbar / Header -->
+        <header class="glass-panel rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-purple-400 text-2xl shadow-lg shadow-purple-900/30">
+                    <i class="fa-solid fa-dna"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-white tracking-wide">مختبر علم الوراثة: DNA</h1>
+                    <p class="text-xs text-purple-300 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        إعداد وتصميم: <span class="text-yellow-400 font-bold px-1 bg-yellow-400/10 rounded">معلم العلوم فاضل المبارك</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tab Navigation (Visual matching) -->
+            <div class="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 text-xs md:text-sm font-bold">
+                <button onclick="switchTab('interactive')" id="tab-interactive" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-flask"></i>
+                    المختبر التفاعلي
+                </button>
+                <button onclick="switchTab('explanation')" id="tab-explanation" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    الشرح والتوضيح
+                </button>
+                <button onclick="switchTab('game')" id="tab-game" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad"></i>
+                    لعبة أونو 3D DNA
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Interactive Workspace -->
+        <main id="view-interactive" class="glass-panel rounded-2xl p-4 md:p-6 flex-grow flex flex-col justify-between gap-6 border border-slate-800">
+            
+            <!-- Controls & Subheader -->
+            <div class="flex flex-wrap justify-between items-center gap-4 pb-2 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                        <i class="fa-solid fa-vial"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg md:text-xl font-bold text-white">مختبر بناء واستنساخ شريط DNA التفاعلي</h2>
+                        <p class="text-xs text-slate-400">إشراف ومتابعة: <strong class="text-yellow-400">معلم العلوم فاضل المبارك</strong> | طابق القواعد النيتروجينية المقابلة</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="resetLab()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs md:text-sm font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        إعادة الضبط
+                    </button>
+                    <button onclick="autoComplete()" class="px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 text-xs md:text-sm font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        إكمال تلقائي
+                    </button>
+                </div>
+            </div>
+
+            <!-- DNA Strand Visualizer Area -->
+            <div class="glass-card rounded-xl p-4 md:p-6 flex flex-col gap-6 overflow-x-auto relative">
+                
+                <!-- Strand Labels Header -->
+                <div class="flex justify-between items-center text-xs text-slate-400 font-bold px-2">
+                    <span>شريط DNA القالب (الأصلي)</span>
+                    <span class="text-slate-500">اتجاه 5' ← 3'</span>
+                </div>
+
+                <!-- Template Strand (Original Bases) -->
+                <div id="template-strand" class="flex justify-center items-center gap-2 md:gap-4 min-w-[650px] py-1">
+                    <!-- Dynamic bases injected via JS -->
+                </div>
+
+                <!-- Hydrogen Bonds Layer -->
+                <div id="bonds-layer" class="flex justify-center items-center gap-2 md:gap-4 min-w-[650px] h-8 my-[-8px]">
+                    <!-- Dynamic bonds injected via JS -->
+                </div>
+
+                <!-- Student Complementary Strand -->
+                <div id="student-strand" class="flex justify-center items-center gap-2 md:gap-4 min-w-[650px] py-1">
+                    <!-- Dynamic interactive slots injected via JS -->
+                </div>
+
+                <!-- Bottom Strand Label -->
+                <div class="flex justify-between items-center text-xs text-slate-400 font-bold px-2">
+                    <span>الشريط المكمل (إكمال الطالب)</span>
+                    <span class="text-slate-500">اتجاه 3' ← 5'</span>
+                </div>
+            </div>
+
+            <!-- Base Selector Keyboard Buttons -->
+            <div class="glass-card rounded-xl p-4 flex flex-col gap-3">
+                <span class="text-center text-xs text-slate-300 font-bold">اختر القاعدة النيتروجينية لبناء الشريط المكمل:</span>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto w-full">
+                    <!-- Adenine A -->
+                    <button onclick="selectBase('A')" class="btn-A border-2 rounded-xl p-3 flex items-center justify-between transition-all transform active:scale-95 shadow-lg group">
+                        <span class="font-black text-lg text-white">أدنين</span>
+                        <span class="w-8 h-8 rounded-lg bg-red-500/80 text-white font-bold flex items-center justify-center text-lg border border-red-300 shadow">A</span>
+                    </button>
+
+                    <!-- Thymine T -->
+                    <button onclick="selectBase('T')" class="btn-T border-2 rounded-xl p-3 flex items-center justify-between transition-all transform active:scale-95 shadow-lg group">
+                        <span class="font-black text-lg text-white">ثايمين</span>
+                        <span class="w-8 h-8 rounded-lg bg-blue-500/80 text-white font-bold flex items-center justify-center text-lg border border-blue-300 shadow">T</span>
+                    </button>
+
+                    <!-- Cytosine C -->
+                    <button onclick="selectBase('C')" class="btn-C border-2 rounded-xl p-3 flex items-center justify-between transition-all transform active:scale-95 shadow-lg group">
+                        <span class="font-black text-lg text-white">سيتوسين</span>
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/80 text-white font-bold flex items-center justify-center text-lg border border-emerald-300 shadow">C</span>
+                    </button>
+
+                    <!-- Guanine G -->
+                    <button onclick="selectBase('G')" class="btn-G border-2 rounded-xl p-3 flex items-center justify-between transition-all transform active:scale-95 shadow-lg group">
+                        <span class="font-black text-lg text-white">جوانين</span>
+                        <span class="w-8 h-8 rounded-lg bg-amber-500/80 text-white font-bold flex items-center justify-center text-lg border border-amber-300 shadow">G</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Banner / Feedback Bar -->
+            <div id="status-banner" class="rounded-xl p-3.5 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-3 text-amber-200 text-xs md:text-sm font-bold text-center">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i>
+                <span id="status-text">اختر موقعاً في الشريط المكمل ثم انقر على القاعدة النيتروجينية المناسبة. تذكر دائماً: (A يترابط مع T) و (C يترابط مع G).</span>
+            </div>
+
+        </main>
+
+        <!-- View Explanation (Tab Panel) -->
+        <section id="view-explanation" class="glass-panel rounded-2xl p-6 hidden flex-col gap-4">
+            <h2 class="text-xl font-bold text-yellow-400 flex items-center gap-2">
+                <i class="fa-solid fa-book-bookmark"></i>
+                القواعد الأساسية لبناء واستنساخ DNA
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300 leading-relaxed">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    <h3 class="font-bold text-white text-base mb-2 border-b border-slate-700 pb-1">قاعدة تكامل القواعد (Chargaff's Rule)</h3>
+                    <p class="mb-2">تترابط القواعد النيتروجينية في جزيء DNA بشكل محدد ومزدوج:</p>
+                    <ul class="list-disc list-inside space-y-1 text-xs md:text-sm">
+                        <li><strong class="text-red-400">الأدنين (A)</strong> يرتبط دائماً مع <strong class="text-blue-400">الثايمين (T)</strong> بواسطة رابطتين هيدروجينيتين.</li>
+                        <li><strong class="text-emerald-400">السيتوسين (C)</strong> يرتبط دائماً مع <strong class="text-amber-400">الجوانين (G)</strong> بواسطة ثلاث روابط هيدروجينية.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    <h3 class="font-bold text-white text-base mb-2 border-b border-slate-700 pb-1">خطوات عملية الاستنساخ</h3>
+                    <ol class="list-decimal list-inside space-y-1 text-xs md:text-sm">
+                        <li>فك التواء شريط DNA المزدوج بواسطة إنزيم الفك (Helicase).</li>
+                        <li>ربط القواعد المكملة بالشريط الأصلي بواسطة إنزيم البلمرة (DNA Polymerase).</li>
+                        <li>تكوين شريطين جديدين مماثلين تماماً للشريط الأصلي.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Game (Tab Panel) -->
+        <section id="view-game" class="glass-panel rounded-2xl p-6 hidden flex-col items-center justify-center text-center gap-4 py-12">
+            <div class="w-16 h-16 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-3xl border border-yellow-500/40 animate-bounce">
+                <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white">لعبة أونو 3D DNA التفاعلية</h2>
+            <p class="text-slate-400 text-sm max-w-md">وضع اللعبة متاح حالياً للتطوير والتحديث الشامل تحت إشراف معلم العلوم <strong class="text-yellow-400">فاضل المبارك</strong>.</p>
+            <button onclick="switchTab('interactive')" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm shadow-lg hover:opacity-90 transition">
+                العودة للمختبر التفاعلي
+            </button>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-xs text-slate-500 font-semibold py-2">
+        جميع الحقوق محفوظة © 2026 | تطوير وتصميم التعليم الرقمي - إشراف المعلم <span class="text-slate-300 font-bold">فاضل المبارك</span>
+    </footer>
+
+    <!-- Interactive Script Logic -->
+    <script>
+        // Data Structure for Original DNA Template Strand
+        const templateData = [
+            { id: 0, code: 'A', name: 'أدنين' },
+            { id: 1, code: 'T', name: 'ثايمين' },
+            { id: 2, code: 'C', name: 'سيتوسين' },
+            { id: 3, code: 'G', name: 'جوانين' },
+            { id: 4, code: 'T', name: 'ثايمين' },
+            { id: 5, code: 'A', name: 'أدنين' },
+            { id: 6, code: 'G', name: 'جوانين' },
+            { id: 7, code: 'C', name: 'سيتوسين' }
+        ];
+
+        // Mapping Complementary Pairs
+        const complementPair = {
+            'A': 'T',
+            'T': 'A',
+            'C': 'G',
+            'G': 'C'
+        };
+
+        const baseNames = {
+            'A': 'أدنين',
+            'T': 'ثايمين',
+            'C': 'سيتوسين',
+            'G': 'جوانين'
+        };
+
+        // Student's Current Strand State (Array of selected base objects or null)
+        let studentStrand = new Array(templateData.length).fill(null);
+        let selectedIndex = 0; // Default focused position
+
+        // Elements
+        const templateStrandEl = document.getElementById('template-strand');
+        const bondsLayerEl = document.getElementById('bonds-layer');
+        const studentStrandEl = document.getElementById('student-strand');
+        const statusBannerEl = document.getElementById('status-banner');
+        const statusTextEl = document.getElementById('status-text');
+
+        // Initial Load
+        window.onload = function() {
+            renderStrands();
+        };
+
+        // Render the full strands UI
+        function renderStrands() {
+            // 1. Render Template Strand
+            templateStrandEl.innerHTML = templateData.map(item => `
+                <div class="w-14 h-20 md:w-16 md:h-24 rounded-xl base-${item.code} border-2 flex flex-col items-center justify-between p-2 shadow-md">
+                    <span class="text-white font-black text-lg md:text-xl">${item.code}</span>
+                    <span class="text-[10px] md:text-xs font-bold text-white/90 leading-none">${item.name}</span>
+                </div>
+            `).join('');
+
+            // 2. Render Bonds & Connections
+            bondsLayerEl.innerHTML = templateData.map((item, idx) => {
+                const studentVal = studentStrand[idx];
+                if (!studentVal) {
+                    return `<div class="w-14 md:w-16 flex justify-center text-slate-700 text-xs"><i class="fa-solid fa-ellipsis-vertical"></i></div>`;
+                }
+                const isCorrect = complementPair[item.code] === studentVal;
+                if (isCorrect) {
+                    return `<div class="w-14 md:w-16 flex justify-center text-emerald-400 text-sm bond-line"><i class="fa-solid fa-link"></i></div>`;
+                } else {
+                    return `<div class="w-14 md:w-16 flex justify-center text-red-500 text-sm"><i class="fa-solid fa-xmark"></i></div>`;
+                }
+            }).join('');
+
+            // 3. Render Student Complementary Strand Slots
+            studentStrandEl.innerHTML = studentStrand.map((val, idx) => {
+                const isActive = selectedIndex === idx;
+                const activeClass = isActive ? 'slot-active' : '';
+
+                if (val) {
+                    return `
+                        <div onclick="selectSlot(${idx})" class="w-14 h-20 md:w-16 md:h-24 rounded-xl base-${val} border-2 flex flex-col items-center justify-between p-2 shadow-md cursor-pointer transition-transform ${activeClass}">
+                            <span class="text-white font-black text-lg md:text-xl">${val}</span>
+                            <span class="text-[10px] md:text-xs font-bold text-white/90 leading-none">${baseNames[val]}</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div onclick="selectSlot(${idx})" class="w-14 h-20 md:w-16 md:h-24 rounded-xl bg-slate-800/80 border-2 border-dashed border-slate-600 flex flex-col items-center justify-center p-2 cursor-pointer hover:border-yellow-500/70 transition-all ${activeClass}">
+                            <span class="text-slate-500 text-xs font-bold">موقع ${idx + 1}</span>
+                            <i class="fa-solid fa-plus text-slate-600 text-xs mt-1"></i>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            updateStatus();
+        }
+
+        // Slot selection event
+        function selectSlot(index) {
+            selectedIndex = index;
+            renderStrands();
+        }
+
+        // Apply Nitrogen Base to selected Slot
+        function selectBase(baseCode) {
+            if (selectedIndex === null || selectedIndex < 0 || selectedIndex >= templateData.length) {
+                selectedIndex = 0;
+            }
+
+            studentStrand[selectedIndex] = baseCode;
+
+            // Auto advance to next empty slot if available
+            let nextEmpty = studentStrand.findIndex((val, i) => i > selectedIndex && val === null);
+            if (nextEmpty !== -1) {
+                selectedIndex = nextEmpty;
+            } else {
+                // Find any empty slot
+                let anyEmpty = studentStrand.findIndex(val => val === null);
+                if (anyEmpty !== -1) {
+                    selectedIndex = anyEmpty;
+                }
+            }
+
+            renderStrands();
+        }
+
+        // Update Bottom Banner Status
+        function updateStatus() {
+            let filledCount = studentStrand.filter(x => x !== null).length;
+            let correctCount = 0;
+
+            studentStrand.forEach((val, idx) => {
+                if (val && complementPair[templateData[idx].code] === val) {
+                    correctCount++;
+                }
+            });
+
+            if (filledCount === 0) {
+                statusBannerEl.className = "rounded-xl p-3.5 bg-blue-500/10 border border-blue-500/30 flex items-center justify-center gap-3 text-blue-200 text-xs md:text-sm font-bold text-center";
+                statusTextEl.innerHTML = `<i class="fa-solid fa-circle-info text-blue-400 text-base"></i> ابدأ باختيار خانة في الشريط المكمل ثم اضغط القواعد (A, T, C, G) لبناء الشريط.`;
+            } else if (filledCount < templateData.length) {
+                statusBannerEl.className = "rounded-xl p-3.5 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-3 text-amber-200 text-xs md:text-sm font-bold text-center";
+                statusTextEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-base"></i> تم إكمال (${filledCount} من ${templateData.length}) قواعد. تم تحقيق (${correctCount}) إجابات صحيحة. تذكر دائماً: A مع T و C مع G.`;
+            } else {
+                // All slots filled
+                if (correctCount === templateData.length) {
+                    statusBannerEl.className = "rounded-xl p-3.5 bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center gap-3 text-emerald-300 text-xs md:text-sm font-bold text-center animate-pulse";
+                    statusTextEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i> ممتاز جداً! اكتمل الشريط المكمل بنجاح وجميع الإجابات صحيحـة (8 من 8). أحسنت يا بطل!`;
+                } else {
+                    statusBannerEl.className = "rounded-xl p-3.5 bg-red-500/15 border border-red-500/40 flex items-center justify-center gap-3 text-red-300 text-xs md:text-sm font-bold text-center";
+                    statusTextEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400 text-lg"></i> اكتمل الشريط ولديك (${correctCount} من ${templateData.length}) إجابات صحيحة. راجع المواقع التي تحتوي علامة (X) باللون الأحمر وقم بتصحيحها.`;
+                }
+            }
+        }
+
+        // Reset Lab State
+        function resetLab() {
+            studentStrand = new Array(templateData.length).fill(null);
+            selectedIndex = 0;
+            renderStrands();
+        }
+
+        // Auto Complete correct bases
+        function autoComplete() {
+            studentStrand = templateData.map(item => complementPair[item.code]);
+            selectedIndex = 0;
+            renderStrands();
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.getElementById('view-interactive').classList.add('hidden');
+            document.getElementById('view-explanation').classList.add('hidden');
+            document.getElementById('view-game').classList.add('hidden');
+
+            document.getElementById('tab-interactive').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2";
+            document.getElementById('tab-explanation').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2";
+            document.getElementById('tab-game').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-2";
+
+            if (tabName === 'interactive') {
+                document.getElementById('view-interactive').classList.remove('hidden');
+                document.getElementById('tab-interactive').className = "px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md transition-all flex items-center gap-2";
+            } else if (tabName === 'explanation') {
+                document.getElementById('view-explanation').classList.remove('hidden');
+                document.getElementById('tab-explanation').className = "px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md transition-all flex items-center gap-2";
+            } else if (tabName === 'game') {
+                document.getElementById('view-game').classList.remove('hidden');
+                document.getElementById('tab-game').className = "px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md transition-all flex items-center gap-2";
+            }
+        }
+    </script>
+</body>
+</html>
